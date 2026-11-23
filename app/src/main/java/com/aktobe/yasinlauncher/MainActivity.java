@@ -1,4 +1,4 @@
-package com.aktobe.yasinlauncher;
+package com.aktobe.yasinappletv;
 
 import android.app.Activity;
 import android.content.Intent;
