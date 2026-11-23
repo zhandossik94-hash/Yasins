@@ -1,7 +1,7 @@
-name: Build Yasin Apple TV Launcher APK
+name: Build Yasin Apple TV Launcher v2
 on:
   push:
-    branches: [main, master]
+    branches: [apple-tv-redesign]
   workflow_dispatch:
 
 permissions:
@@ -11,59 +11,22 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
+      - name: Checkout source
         uses: actions/checkout@v4
-
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
-
-      - name: Extract and locate Android project
-        shell: bash
-        run: |
-          set -euo pipefail
-          archive="$(find . -maxdepth 2 -type f -iname '*.zip' | head -n 1)"
-          if [ -z "$archive" ]; then
-            echo "No ZIP archive found in repository."
-            exit 1
-          fi
-          mkdir -p extracted
-          unzip -q "$archive" -d extracted
-          project_dir="$(find extracted -type f -name settings.gradle -printf '%h\n' | head -n 1)"
-          if [ -z "$project_dir" ]; then
-            project_dir="$(find extracted -type f -name settings.gradle.kts -printf '%h\n' | head -n 1)"
-          fi
-          if [ -z "$project_dir" ]; then
-            echo "No Gradle Android project found: settings.gradle(.kts) is missing."
-            echo "Archive contents:"
-            find extracted -maxdepth 5 -type f | head -200
-            exit 1
-          fi
-          echo "PROJECT_DIR=$project_dir" >> "$GITHUB_ENV"
-          echo "Found project: $project_dir"
-
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
-          gradle-version: '8.7'
-
-      - name: Build debug APK
-        shell: bash
-        run: |
-          set -euo pipefail
-          cd "$PROJECT_DIR"
-          if [ -f ./gradlew ]; then
-            chmod +x ./gradlew
-            ./gradlew assembleDebug --stacktrace
-          else
-            gradle assembleDebug --stacktrace
-          fi
-
+          gradle-version: '8.9'
+      - name: Build Android TV launcher
+        run: gradle --no-daemon assembleDebug --stacktrace
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: YasinAppleTVLauncher-debug
-          path: '**/build/outputs/apk/debug/*.apk'
+          name: Yasin-Apple-TV-Launcher-v2
+          path: app/build/outputs/apk/debug/*.apk
           if-no-files-found: error
