@@ -1,0 +1,1 @@
+# Yasin Apple TV Launcher\n\nA lightweight Android TV home launcher inspired by the Apple TV interface. Designed for D-pad remote navigation, large-screen layouts, installed-app discovery, and quick access to Android settings.\n\nMinimum Android: 6.0 (API 23). Build: `gradle assembleDebug`.\n
