@@ -1,10 +1,10 @@
 plugins { id 'com.android.application' }
 
 android {
-    namespace 'com.aktobe.yasinlauncher'
+    namespace 'com.aktobe.yasinappletv'
     compileSdk 35
     defaultConfig {
-        applicationId 'com.aktobe.yasinlauncher'
+        applicationId 'com.aktobe.yasinappletv'
         minSdk 23
         targetSdk 28
         versionCode 2
