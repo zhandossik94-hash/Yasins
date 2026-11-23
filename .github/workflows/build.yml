@@ -1,5 +1,4 @@
 name: Build Yasin Apple TV Launcher APK
-
 on:
   push:
     branches: [main, master]
@@ -32,11 +31,14 @@ jobs:
           fi
           mkdir -p extracted
           unzip -q "$archive" -d extracted
-          project_dir="$(find extracted -type f \\( -name settings.gradle -o -name settings.gradle.kts \\) -printf '%h\\n' | head -n 1)"
+          project_dir="$(find extracted -type f -name settings.gradle -printf '%h\n' | head -n 1)"
+          if [ -z "$project_dir" ]; then
+            project_dir="$(find extracted -type f -name settings.gradle.kts -printf '%h\n' | head -n 1)"
+          fi
           if [ -z "$project_dir" ]; then
             echo "No Gradle Android project found: settings.gradle(.kts) is missing."
             echo "Archive contents:"
-            find extracted -maxdepth 4 -type f | head -200
+            find extracted -maxdepth 5 -type f | head -200
             exit 1
           fi
           echo "PROJECT_DIR=$project_dir" >> "$GITHUB_ENV"
@@ -63,6 +65,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: YasinAppleTVLauncher-debug
-          path: |
-            **/build/outputs/apk/debug/*.apk
+          path: '**/build/outputs/apk/debug/*.apk'
           if-no-files-found: error
