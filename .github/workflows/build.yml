@@ -1,0 +1,68 @@
+name: Build Yasin Apple TV Launcher APK
+
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Extract and locate Android project
+        shell: bash
+        run: |
+          set -euo pipefail
+          archive="$(find . -maxdepth 2 -type f -iname '*.zip' | head -n 1)"
+          if [ -z "$archive" ]; then
+            echo "No ZIP archive found in repository."
+            exit 1
+          fi
+          mkdir -p extracted
+          unzip -q "$archive" -d extracted
+          project_dir="$(find extracted -type f \\( -name settings.gradle -o -name settings.gradle.kts \\) -printf '%h\\n' | head -n 1)"
+          if [ -z "$project_dir" ]; then
+            echo "No Gradle Android project found: settings.gradle(.kts) is missing."
+            echo "Archive contents:"
+            find extracted -maxdepth 4 -type f | head -200
+            exit 1
+          fi
+          echo "PROJECT_DIR=$project_dir" >> "$GITHUB_ENV"
+          echo "Found project: $project_dir"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.7'
+
+      - name: Build debug APK
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd "$PROJECT_DIR"
+          if [ -f ./gradlew ]; then
+            chmod +x ./gradlew
+            ./gradlew assembleDebug --stacktrace
+          else
+            gradle assembleDebug --stacktrace
+          fi
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: YasinAppleTVLauncher-debug
+          path: |
+            **/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
